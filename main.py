@@ -1,33 +1,44 @@
 import smtplib, ssl
 import config
-# config contains the information for sender, recipient, and the app password
 
-email_provider_dict = {
-    'microsoft': 'smtp-mail.outlook.com',
-    'gmail' : 'smtp.gmail.com',
-    'yahoo': 'smtp.mail.yahoo.com',
-    'icloud': 'smtp.mail.yahoo.com'
-}
+def login(credential, server):
+    sender =  credential['sender']
+    password = credential['password']
+    server.starttls()
+    try:
+        server.login(user = sender, password=password)
+        print("Successfully login")
+    except Exception as e:
+        print("Unable to login")
+        print(e)
 
-# email_provider = (input('which email do you want to use:')).lower()
-# sender = input('Please enter your email address: ')
-# password = input('Please enter your password: ')
-# recipient = input('Your recipient email: ')
+def sendMail(server, sender, recipient):
+    subject = 'Test subject'
+    body = 'Hello World'
+    msg = f'Subject: {subject}\n\n{body}'
+    try:
+        server.sendmail(sender, recipient, msg)
+        print("Sucessfully sent")
+    except Exception as e:
+        print( e )
 
-email_provider = 'gmail'
-sender = config.sender
-password = config.password
-recipient = config.recipient
+if __name__ == '__main__':
 
-server = smtplib.SMTP(host = email_provider_dict[email_provider], 
-                        port= 587)
-server.starttls()
-server.login(user = sender, password=password)
+    email_provider_dict = {
+        'microsoft': 'smtp-mail.outlook.com',
+        'gmail' : 'smtp.gmail.com',
+        'yahoo': 'smtp.mail.yahoo.com',
+        'icloud': 'smtp.mail.yahoo.com'
+    }
 
-
-subject = 'Test subject2'
-body = 'Hello World'
-msg = f'Subject: {subject}\n\n{body}'
-
-server.sendmail(sender, recipient, msg)
-server.quit()
+    credential = {
+        'email_provider' : 'gmail',
+        'sender' : config.sender,
+        'password' : config.password,
+        'recipient' : config.recipient,
+        'portnumber': 587
+    }
+    server = smtplib.SMTP(host = email_provider_dict[credential['email_provider']], port= credential['portnumber'])
+    login(credential, server)
+    sendMail(server, sender = credential['sender'], recipient= credential['recipient'])
+    server.quit()
